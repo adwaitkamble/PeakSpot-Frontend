@@ -7,13 +7,30 @@ import { COLORS, SPACING, FONTS, SHADOWS } from '../constants/theme';
 // --- Mock Data ---
 const TABS = ['Sprint', 'Shuttle', 'Agility', 'Endurance'];
 
-const PROTOCOLS = [
-    { id: 1, title: '2 Gate 10 Meter Sprint', subtitle: '2 gates • 10 meters' },
-    { id: 2, title: '3 Gate 20 Meter Sprint', subtitle: '3 gates • 20 meters' },
-    { id: 3, title: '4 Gate 30 Meter Sprint', subtitle: '4 gates • 30 meters' },
-    { id: 4, title: '5 Gate 40 Meter Sprint', subtitle: '5 gates • 40 meters' },
-    { id: 5, title: '2 Gate 20 Meter Sprint', subtitle: '2 gates • 20 meters' },
-];
+const PROTOCOLS_BY_TAB: Record<string, Array<{ id: number; title: string; subtitle: string }>> = {
+    Sprint: [
+        { id: 1, title: '2 Gate 10 Meter Sprint', subtitle: '2 gates • 10 meters' },
+        { id: 2, title: '3 Gate 20 Meter Sprint', subtitle: '3 gates • 20 meters' },
+        { id: 3, title: '4 Gate 30 Meter Sprint', subtitle: '4 gates • 30 meters' },
+        { id: 4, title: '5 Gate 40 Meter Sprint', subtitle: '5 gates • 40 meters' },
+        { id: 5, title: '2 Gate 20 Meter Sprint', subtitle: '2 gates • 20 meters' },
+    ],
+    Shuttle: [
+        { id: 6, title: '5-10-5 Shuttle', subtitle: '3 gates • 20 meters total' },
+        { id: 7, title: '30-15 Intermittent Fitness Test', subtitle: 'Audio cues • 40 meters' },
+        { id: 8, title: 'Pro Agility Shuttle', subtitle: '3 gates • 15 meters' },
+    ],
+    Agility: [
+        { id: 9, title: 'T-Test Agility', subtitle: '4 gates • Directional' },
+        { id: 10, title: 'Illinois Agility Test', subtitle: '8 gates • Standard path' },
+        { id: 11, title: 'L-Run / 3-Cone Test', subtitle: '3 gates • 3 cones' },
+    ],
+    Endurance: [
+        { id: 12, title: 'Beep Test (20m Multi-Stage)', subtitle: 'Audio cues • 20 meters' },
+        { id: 13, title: 'Yo-Yo Intermittent Recovery Test', subtitle: 'Audio cues • 20 meters' },
+        { id: 14, title: '12-Minute Cooper Run', subtitle: 'Continuous tracking • Track lap' },
+    ],
+};
 
 // --- Reusable SVG Icons ---
 const BackIcon = () => (
@@ -106,12 +123,12 @@ export default function SelectTestProtocol({ navigation }: any) {
 
                 {/* Protocol List */}
                 <View style={styles.protocolList}>
-                    {PROTOCOLS.map((protocol) => (
+                    {(PROTOCOLS_BY_TAB[activeTab] || []).map((protocol) => (
                         <TouchableOpacity
                             key={protocol.id}
                             style={styles.protocolCard}
                             activeOpacity={0.7}
-                            onPress={() => navigation.navigate('ConfigureSprintTest')}
+                            onPress={() => navigation.navigate('ConfigureSprintTest', { protocol })}
                         >
                             <View style={styles.protocolIconPlaceholder} />
                             <View style={styles.protocolInfo}>

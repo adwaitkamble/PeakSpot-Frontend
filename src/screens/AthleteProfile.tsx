@@ -163,7 +163,7 @@ export default function AthleteProfile({ navigation }: any) {
                                 <QrIcon />
                                 <Text style={styles.secondaryBtnText}>View QR</Text>
                             </TouchableOpacity>
-                            <TouchableOpacity style={styles.secondaryBtn} activeOpacity={0.8}>
+                            <TouchableOpacity style={styles.secondaryBtn} activeOpacity={0.8} onPress={() => navigation.navigate('Reports')}>
                                 <ReportIcon />
                                 <Text style={styles.secondaryBtnText}>Reports</Text>
                             </TouchableOpacity>

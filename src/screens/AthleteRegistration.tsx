@@ -72,7 +72,7 @@ export default function AthleteRegistration({ navigation }: any) {
           <View style={styles.headerContent}>
             <TouchableOpacity 
               style={styles.backButton} 
-              onPress={() => navigation.navigate('Dashboard')}
+              onPress={() => navigation.goBack()}
               activeOpacity={0.7}
             >
               <BackIcon />

@@ -128,7 +128,7 @@ export default function CoachDashboard({ navigation }: any) {
                 <Text style={styles.actionText}>Scan QR</Text>
               </TouchableOpacity>
 
-              <TouchableOpacity style={styles.actionButton} activeOpacity={0.7}>
+              <TouchableOpacity style={styles.actionButton} activeOpacity={0.7} onPress={() => navigation.navigate('Tests')}>
                 <View style={styles.iconCircle}>
                   <Svg width="22" height="22" viewBox="0 0 24 24" fill="none">
                     <Path
@@ -143,7 +143,7 @@ export default function CoachDashboard({ navigation }: any) {
                 <Text style={styles.actionText}>Start Test</Text>
               </TouchableOpacity>
 
-              <TouchableOpacity style={styles.actionButton} activeOpacity={0.7}>
+              <TouchableOpacity style={styles.actionButton} activeOpacity={0.7} onPress={() => navigation.navigate('Reports')}>
                 <View style={styles.iconCircle}>
                   <Svg width="22" height="22" viewBox="0 0 24 24" fill="none">
                     <Path

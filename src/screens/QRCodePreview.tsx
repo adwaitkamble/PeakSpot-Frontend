@@ -1,6 +1,9 @@
-import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Platform, StatusBar, Image } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Platform, StatusBar, Image, Share, Alert, Modal } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { File as ExpoFile, Paths } from 'expo-file-system';
+import * as MediaLibrary from 'expo-media-library';
+import * as Sharing from 'expo-sharing';
 import Svg, { Path, Rect, Circle, Line, Polyline } from 'react-native-svg';
 import { COLORS, SPACING, FONTS, SHADOWS } from '../constants/theme';
 
@@ -52,6 +55,66 @@ const QrIconSmall = () => (
 );
 
 export default function QRCodePreview({ navigation }: any) {
+    const [showDownloadedModal, setShowDownloadedModal] = useState(false);
+
+    const handleDownload = async () => {
+        try {
+            // Request write-only permissions to save to gallery
+            const { status } = await MediaLibrary.requestPermissionsAsync(true);
+            if (status !== 'granted') {
+                Alert.alert('Permission Denied', 'Storage permission is required to save the QR code to your gallery.');
+                return;
+            }
+
+            const qrUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=ATH-0248&color=182650';
+            const fileLocation = new ExpoFile(Paths.cache, 'ATH-0248-QR.png');
+
+            // Download file to local cache directory
+            const downloadedFile = await ExpoFile.downloadFileAsync(qrUrl, fileLocation, { idempotent: true });
+
+            // Verify the file actually exists before saving
+            if (!downloadedFile.exists) {
+                throw new Error('Download completed but file was not found on device.');
+            }
+
+            // Create a media asset in the device gallery
+            const asset = await MediaLibrary.createAssetAsync(downloadedFile.uri);
+            if (!asset) {
+                throw new Error('Failed to save QR code to gallery.');
+            }
+            
+            // Show custom popup
+            setShowDownloadedModal(true);
+            setTimeout(() => {
+                setShowDownloadedModal(false);
+            }, 2200);
+        } catch (error: any) {
+            Alert.alert('Download Error', error.message || 'Unable to download and save QR code.');
+        }
+    };
+
+    const handleShare = async () => {
+        try {
+            const qrUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=ATH-0248&color=182650';
+            const fileLocation = new ExpoFile(Paths.cache, 'ATH-0248-QR-share.png');
+            
+            // Download to cache for sharing
+            const downloadedFile = await ExpoFile.downloadFileAsync(qrUrl, fileLocation, { idempotent: true });
+            
+            if (await Sharing.isAvailableAsync()) {
+                await Sharing.shareAsync(downloadedFile.uri);
+            } else {
+                Alert.alert('Sharing Not Available', 'Sharing is not available on this platform.');
+            }
+        } catch (error: any) {
+            Alert.alert('Share Error', error.message || 'Unable to share QR code.');
+        }
+    };
+
+    const handlePrint = () => {
+        Alert.alert('Print Job', 'Connecting to PCCOE Network Printer...');
+    };
+
     return (
         <View style={styles.container}>
             {/* Custom Header */}
@@ -126,15 +189,15 @@ export default function QRCodePreview({ navigation }: any) {
 
                     {/* Small Action Buttons */}
                     <View style={styles.smallActionsRow}>
-                        <TouchableOpacity style={styles.smallActionButton}>
+                        <TouchableOpacity style={styles.smallActionButton} onPress={handleDownload}>
                             <DownloadIcon />
                             <Text style={styles.smallActionText}>Download</Text>
                         </TouchableOpacity>
-                        <TouchableOpacity style={styles.smallActionButton}>
+                        <TouchableOpacity style={styles.smallActionButton} onPress={handleShare}>
                             <ShareIcon />
                             <Text style={styles.smallActionText}>Share</Text>
                         </TouchableOpacity>
-                        <TouchableOpacity style={styles.smallActionButton}>
+                        <TouchableOpacity style={styles.smallActionButton} onPress={handlePrint}>
                             <PrintIcon />
                             <Text style={styles.smallActionText}>Print</Text>
                         </TouchableOpacity>
@@ -156,18 +219,43 @@ export default function QRCodePreview({ navigation }: any) {
 
             {/* Sticky Bottom Actions (Above Navigation Tab) */}
             <View style={styles.stickyBottomBar}>
-                <TouchableOpacity style={styles.primaryDownloadBtn} activeOpacity={0.8}>
+                <TouchableOpacity style={styles.primaryDownloadBtn} activeOpacity={0.8} onPress={handleDownload}>
                     <Text style={styles.primaryDownloadText}>DOWNLOAD</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.secondaryActionBtn} activeOpacity={0.8}>
+                <TouchableOpacity style={styles.secondaryActionBtn} activeOpacity={0.8} onPress={handleShare}>
                     <ShareIcon />
                     <Text style={styles.secondaryActionText}>Share</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.secondaryActionBtn} activeOpacity={0.8}>
+                <TouchableOpacity style={styles.secondaryActionBtn} activeOpacity={0.8} onPress={handlePrint}>
                     <PrintIcon />
                     <Text style={styles.secondaryActionText}>Print</Text>
                 </TouchableOpacity>
             </View>
+
+            {/* Success Popup Modal */}
+            <Modal
+                transparent={true}
+                visible={showDownloadedModal}
+                animationType="fade"
+                onRequestClose={() => setShowDownloadedModal(false)}
+            >
+                <View style={styles.modalOverlay}>
+                    <View style={styles.modalContent}>
+                        <View style={styles.successIconWrapper}>
+                            <Svg width="36" height="36" viewBox="0 0 24 24" fill="none">
+                                <Path
+                                    d="M20 6L9 17L4 12"
+                                    stroke={COLORS.secondary.limeGreen}
+                                    strokeWidth="3.5"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                />
+                            </Svg>
+                        </View>
+                        <Text style={styles.modalText}>Your QR code is downloaded successfully</Text>
+                    </View>
+                </View>
+            </Modal>
         </View>
     );
 }
@@ -418,5 +506,36 @@ const styles = StyleSheet.create({
         color: COLORS.oxfordBlue[500],
         fontSize: 13,
         fontFamily: FONTS.primary.bold,
+    },
+    modalOverlay: {
+        flex: 1,
+        backgroundColor: 'rgba(24, 38, 80, 0.4)',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    modalContent: {
+        backgroundColor: COLORS.neutral.white,
+        borderRadius: 24,
+        padding: 30,
+        alignItems: 'center',
+        width: '80%',
+        maxWidth: 320,
+        ...SHADOWS.md,
+    },
+    successIconWrapper: {
+        width: 64,
+        height: 64,
+        borderRadius: 32,
+        backgroundColor: '#F0FAE6',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginBottom: 16,
+    },
+    modalText: {
+        color: COLORS.oxfordBlue[500],
+        fontSize: 16,
+        fontFamily: FONTS.primary.bold,
+        textAlign: 'center',
+        lineHeight: 22,
     }
 });

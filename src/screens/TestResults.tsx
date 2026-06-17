@@ -1,5 +1,5 @@
-import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, SafeAreaView, Platform, StatusBar } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, SafeAreaView, Platform, StatusBar, Modal } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Path, Circle, Defs, Stop, LinearGradient as SvgLinearGradient } from 'react-native-svg';
 import { COLORS, SPACING, FONTS, SHADOWS } from '../constants/theme';
@@ -33,6 +33,15 @@ const PdfIcon = () => (
 );
 
 export default function TestResults() {
+    const [showSavedModal, setShowSavedModal] = useState(false);
+
+    const handleSave = () => {
+        setShowSavedModal(true);
+        setTimeout(() => {
+            setShowSavedModal(false);
+        }, 2200);
+    };
+
     return (
         <View style={styles.container}>
             {/* Custom Header */}
@@ -183,7 +192,7 @@ export default function TestResults() {
 
                 {/* Action Buttons */}
                 <View style={styles.actionButtonsRow}>
-                    <TouchableOpacity style={styles.primaryBtn} activeOpacity={0.8}>
+                    <TouchableOpacity style={styles.primaryBtn} activeOpacity={0.8} onPress={handleSave}>
                         <SaveIcon />
                         <Text style={styles.primaryBtnText}>Save Result</Text>
                     </TouchableOpacity>
@@ -195,6 +204,31 @@ export default function TestResults() {
                 </View>
 
             </ScrollView>
+
+            {/* Success Popup Modal */}
+            <Modal
+                transparent={true}
+                visible={showSavedModal}
+                animationType="fade"
+                onRequestClose={() => setShowSavedModal(false)}
+            >
+                <View style={styles.modalOverlay}>
+                    <View style={styles.modalContent}>
+                        <View style={styles.successIconWrapper}>
+                            <Svg width="36" height="36" viewBox="0 0 24 24" fill="none">
+                                <Path
+                                    d="M20 6L9 17L4 12"
+                                    stroke={COLORS.secondary.limeGreen}
+                                    strokeWidth="3.5"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                />
+                            </Svg>
+                        </View>
+                        <Text style={styles.modalText}>Your results are saved successfully</Text>
+                    </View>
+                </View>
+            </Modal>
         </View>
     );
 }
@@ -441,5 +475,36 @@ const styles = StyleSheet.create({
         color: COLORS.oxfordBlue[500],
         fontSize: 14,
         fontFamily: FONTS.primary.bold,
+    },
+    modalOverlay: {
+        flex: 1,
+        backgroundColor: 'rgba(24, 38, 80, 0.4)',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    modalContent: {
+        backgroundColor: COLORS.neutral.white,
+        borderRadius: 24,
+        padding: 30,
+        alignItems: 'center',
+        width: '80%',
+        maxWidth: 320,
+        ...SHADOWS.md,
+    },
+    successIconWrapper: {
+        width: 64,
+        height: 64,
+        borderRadius: 32,
+        backgroundColor: '#F0FAE6',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginBottom: 16,
+    },
+    modalText: {
+        color: COLORS.oxfordBlue[500],
+        fontSize: 16,
+        fontFamily: FONTS.primary.bold,
+        textAlign: 'center',
+        lineHeight: 22,
     }
 });

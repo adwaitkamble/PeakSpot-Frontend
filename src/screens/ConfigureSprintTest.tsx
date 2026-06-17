@@ -23,7 +23,10 @@ const ConnectIcon = () => (
     </Svg>
 );
 
-export default function ConfigureSprintTest({ navigation }: any) {
+export default function ConfigureSprintTest({ route, navigation }: any) {
+    const protocol = route?.params?.protocol;
+    const title = protocol?.title || 'Sprint Test';
+
     // --- Form State ---
     const [gates, setGates] = useState('3');
     const [distance, setDistance] = useState('20m');
@@ -42,7 +45,7 @@ export default function ConfigureSprintTest({ navigation }: any) {
                         <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
                             <BackIcon />
                         </TouchableOpacity>
-                        <Text style={styles.headerTitle}>Configure Sprint Test</Text>
+                        <Text style={styles.headerTitle}>Configure {title}</Text>
                         <View style={{ width: 40 }} />
                     </View>
                 </SafeAreaView>
